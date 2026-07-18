@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>Test de Madrid Sur</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&display=swap" rel="stylesheet">
@@ -126,7 +127,13 @@
     line-height:1;margin:10px 0 4px;
   }
   .porcentaje span{color:var(--rojo)}
-  .veredicto{font-weight:700;font-size:17px;margin-top:8px}
+  .barrio{
+    display:inline-block;margin-top:14px;
+    font-family:'Archivo Black',sans-serif;font-size:19px;text-transform:uppercase;
+    background:var(--amarillo);border:2px solid var(--negro);border-radius:10px;
+    padding:8px 16px;box-shadow:3px 3px 0 var(--negro);
+  }
+  .veredicto{font-weight:600;font-size:15px;margin-top:12px;color:var(--gris-texto)}
   .billete-pie{
     border-top:2px dashed var(--negro);padding:12px 18px;
     font-size:11px;color:var(--gris-texto);
@@ -159,7 +166,10 @@
   .ranking-lista li.plata{background:#E8E6E1}
   .ranking-lista li.bronce{background:#F0D5B8}
   .ranking-lista li.yo{outline:3px solid var(--rojo);outline-offset:2px}
-  .ranking-lista li .pct{margin-left:auto;font-family:'Archivo Black';font-size:18px;color:var(--rojo)}
+  .ranking-lista li .quien{display:flex;flex-direction:column;min-width:0}
+  .ranking-lista li .quien .zona{font-size:12px;font-weight:600;color:var(--gris-texto);text-transform:uppercase;letter-spacing:.04em}
+  .ranking-lista li.oro .quien .zona{color:#5a4a00}
+  .ranking-lista li .pct{margin-left:auto;font-family:'Archivo Black';font-size:18px;color:var(--rojo);flex-shrink:0;padding-left:10px}
   .ranking-lista li.oro .pct{color:var(--negro)}
   .estado{color:var(--gris-texto);font-size:14px;margin-top:16px}
   .spacer{flex:1}
@@ -228,6 +238,7 @@
         <div class="nombre" id="res-nombre"></div>
         <div class="porcentaje"><span id="res-pct">0</span>%</div>
         <div style="font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;color:var(--gris-texto)">de Madrid Sur</div>
+        <div class="barrio" id="res-barrio"></div>
         <div class="veredicto" id="res-veredicto"></div>
       </div>
       <div class="billete-pie">
@@ -257,20 +268,6 @@
 </div>
 
 <script>
-/* ============================================================
-   CONFIGURACION DEL RANKING (Firebase)
-   ------------------------------------------------------------
-   1. Entra en https://console.firebase.google.com y crea un
-      proyecto gratis (ej. "test-madrid-sur").
-   2. En el menu: Compilacion > Realtime Database > Crear base
-      de datos > empieza en "modo de prueba" (o pon estas reglas:
-      { "rules": { "ranking": { ".read": true, ".write": true } } } )
-   3. Copia la URL que te da (algo como
-      https://test-madrid-sur-default-rtdb.europe-west1.firebasedatabase.app)
-      y pegala aqui abajo entre las comillas.
-   Si la dejas vacia, la app intentara usar el almacenamiento
-   de la vista previa de Claude (solo funciona dentro de Claude).
-   ============================================================ */
 /* URL detectada automaticamente entre las dos posibles regiones
    del proyecto madrid-sur-eab18. No hace falta tocar nada. */
 const FIREBASE_CANDIDATAS = [
@@ -289,7 +286,7 @@ async function detectarFirebase(){
         if (r.ok){ FIREBASE_URL = url; return url; }
       } catch(e){ /* probar la siguiente */ }
     }
-    return FIREBASE_URL; // se queda con la primera por defecto
+    return FIREBASE_URL;
   })();
   return firebaseListo;
 }
@@ -361,55 +358,46 @@ const PREGUNTAS = [
   /* Anade mas preguntas aqui */
 ];
 
-function veredicto(p){
-  if (p >= 90) return "Leyenda de la C-5. Naciste con un tupperware bajo el brazo.";
-  if (p >= 75) return "Orgullo de Madrid Sur. Se te nota hasta andando.";
-  if (p >= 50) return "Se te escucha el Cercanias de fondo.";
-  if (p >= 25) return "Zona neutral. Sospechoso.";
-  return "Eres de Chamberi, admitelo.";
+/* Escala de barrios: de mas Madrid Sur a mas pijo.
+   Cambia los rangos o los textos como quieras. */
+const BARRIOS = [
+  { min:95, b:"Puente de Vallecas", v:"Leyenda absoluta. Naciste con un tupperware bajo el brazo." },
+  { min:85, b:"Parla",              v:"Final de la C-4 y orgulloso de ello." },
+  { min:75, b:"Fuenlabrada",        v:"Se te escucha la C-5 de fondo." },
+  { min:65, b:"Mostoles",           v:"Madrid Sur de manual." },
+  { min:55, b:"Leganes",            v:"Pepineros hasta la medula." },
+  { min:45, b:"Getafe",             v:"Del sur, pero con ATM cerca." },
+  { min:35, b:"Alcorcon",           v:"Frontera. Un pie en cada mundo." },
+  { min:25, b:"Carabanchel",        v:"Barrio, pero ya dentro de la M-30... casi." },
+  { min:15, b:"Chamberi",           v:"Vas de barrio pero pides flat white." },
+  { min:5,  b:"Barrio de Salamanca",v:"Tu de Cercanias sabes lo justo." },
+  { min:0,  b:"La Moraleja",        v:"Tu 'buho' es el chofer. Fuera de aqui." }
+];
+
+function barrioDe(p){
+  for (const r of BARRIOS){ if (p >= r.min) return r; }
+  return BARRIOS[BARRIOS.length - 1];
 }
 
 /* ============================================================
-   CAPA DE ALMACENAMIENTO
-   Usa Firebase si hay URL configurada; si no, el storage de
-   la vista previa de Claude como respaldo.
+   ALMACENAMIENTO (Firebase)
    ============================================================ */
-const usaFirebase = true;
-
 async function guardarResultado(clave, datos){
-  if (usaFirebase){
-    await detectarFirebase();
-    const r = await fetch(FIREBASE_URL + "/ranking/" + encodeURIComponent(clave) + ".json", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(datos)
-    });
-    if (!r.ok) throw new Error("HTTP " + r.status);
-  } else {
-    if (!window.storage) throw new Error("sin storage");
-    await window.storage.set("mdsur:" + clave, JSON.stringify(datos), true);
-  }
+  await detectarFirebase();
+  const r = await fetch(FIREBASE_URL + "/ranking/" + encodeURIComponent(clave) + ".json", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos)
+  });
+  if (!r.ok) throw new Error("HTTP " + r.status);
 }
 
 async function leerRanking(){
-  if (usaFirebase){
-    await detectarFirebase();
-    const r = await fetch(FIREBASE_URL + "/ranking.json");
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    const obj = await r.json();
-    return obj ? Object.values(obj) : [];
-  } else {
-    if (!window.storage) throw new Error("sin storage");
-    const res = await window.storage.list("mdsur:", true);
-    const claves = (res && res.keys) ? res.keys : [];
-    const entradas = await Promise.all(claves.map(async k => {
-      try {
-        const g = await window.storage.get(k, true);
-        return g ? JSON.parse(g.value) : null;
-      } catch(e){ return null; }
-    }));
-    return entradas.filter(Boolean);
-  }
+  await detectarFirebase();
+  const r = await fetch(FIREBASE_URL + "/ranking.json");
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const obj = await r.json();
+  return obj ? Object.values(obj) : [];
 }
 
 /* ============================================================
@@ -424,7 +412,7 @@ let timerRanking = null;
 function mostrar(id){
   document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
   const el = $(id);
-  el.classList.remove('activa'); void el.offsetWidth; // reinicia animacion
+  el.classList.remove('activa'); void el.offsetWidth;
   el.classList.add('activa');
   window.scrollTo(0,0);
   if (id !== 'p-ranking' && timerRanking){
@@ -504,8 +492,10 @@ function animarNumero(el, hasta){
 
 async function terminar(){
   const pct = Math.round(puntos / PREGUNTAS.length * 100);
+  const barrio = barrioDe(pct);
   $('res-nombre').textContent = usuario.display;
-  $('res-veredicto').textContent = veredicto(pct);
+  $('res-barrio').textContent = "Eres de " + barrio.b;
+  $('res-veredicto').textContent = barrio.v;
   $('res-fecha').textContent = new Date().toLocaleDateString('es-ES');
   mostrar('p-resultado');
   animarNumero($('res-pct'), pct);
@@ -515,9 +505,7 @@ async function terminar(){
     await guardarResultado(usuario.clave, { d: usuario.display, p: pct, t: Date.now() });
     $('res-estado').textContent = "Eres un " + pct + "% de Madrid Sur. Resultado guardado en el ranking.";
   } catch (e){
-    $('res-estado').textContent = usaFirebase
-      ? "No se pudo guardar en el ranking. Revisa la conexion y repite el test."
-      : "No se pudo guardar. Comprueba tu conexion o las reglas de Firebase.";
+    $('res-estado').textContent = "No se pudo guardar en el ranking. Revisa la conexion y repite el test.";
   }
 }
 
@@ -555,19 +543,23 @@ async function cargarRanking(primeraVez){
       const pos = document.createElement('span');
       pos.className = 'pos';
       pos.textContent = (i+1);
+      const quien = document.createElement('span');
+      quien.className = 'quien';
       const nom = document.createElement('span');
       nom.textContent = e.d;
+      const zona = document.createElement('span');
+      zona.className = 'zona';
+      zona.textContent = barrioDe(e.p).b;
+      quien.appendChild(nom); quien.appendChild(zona);
       const pct = document.createElement('span');
       pct.className = 'pct';
       pct.textContent = e.p + "%";
-      li.appendChild(pos); li.appendChild(nom); li.appendChild(pct);
+      li.appendChild(pos); li.appendChild(quien); li.appendChild(pct);
       lista.appendChild(li);
     });
   } catch(e){
     $('rank-vivo').style.display = "none";
-    estado.textContent = usaFirebase
-      ? "No se pudo cargar el ranking. Reintentando..."
-      : "No se pudo cargar el ranking. Comprueba las reglas de Firebase (.read y .write en true).";
+    estado.textContent = "No se pudo cargar el ranking. Reintentando...";
   }
 }
 </script>
