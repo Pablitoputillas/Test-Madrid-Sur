@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test de Madrid Sur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --rojo:#E30613;      /* rojo Cercanias */
+    --amarillo:#F2B705;  /* amarillo C-5 */
+    --negro:#111111;
+    --blanco:#FFFFFF;
+    --gris:#EFEDE8;
+    --gris-texto:#6B6B6B;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:'Archivo',system-ui,sans-serif;
+    background:
+      radial-gradient(circle at 85% 8%, rgba(242,183,5,.16), transparent 40%),
+      radial-gradient(circle at 10% 95%, rgba(227,6,19,.08), transparent 45%),
+      var(--gris);
+    color:var(--negro);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .franja{
+    width:100%;height:10px;flex-shrink:0;
+    background:repeating-linear-gradient(90deg,var(--rojo) 0 60px,var(--blanco) 60px 70px,var(--amarillo) 70px 130px,var(--blanco) 130px 140px);
+  }
+  .app{
+    width:100%;max-width:520px;padding:24px 20px 48px;
+    flex:1;display:flex;flex-direction:column;
+  }
+  .marca{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+  .rombo{
+    width:36px;height:36px;background:var(--rojo);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-family:'Archivo Black';font-size:18px;
+    box-shadow:3px 3px 0 var(--negro);
+  }
+  .marca small{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gris-texto);font-weight:600}
+  h1{
+    font-family:'Archivo Black',sans-serif;
+    font-size:clamp(32px,9vw,46px);
+    line-height:1.02;text-transform:uppercase;
+  }
+  h1 .sur{color:var(--rojo);text-shadow:3px 3px 0 var(--amarillo)}
+  .pantalla{display:none;flex-direction:column;flex:1;animation:entrar .3s ease both}
+  .pantalla.activa{display:flex}
+  @keyframes entrar{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .sub{color:var(--gris-texto);margin-top:14px;font-size:15px;line-height:1.55}
+  .sellos{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+  .sello{
+    font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    background:#fff;border:2px solid var(--negro);border-radius:99px;padding:6px 12px;
+  }
+  .btn{
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:17px;
+    border:2px solid var(--negro);border-radius:12px;
+    padding:16px 22px;cursor:pointer;width:100%;
+    background:var(--rojo);color:#fff;
+    box-shadow:4px 4px 0 var(--negro);
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--negro)}
+  .btn.secundario{background:var(--negro);color:#fff}
+  .btn.fantasma{background:#fff;color:var(--negro)}
+  .btn:focus-visible{outline:3px solid var(--amarillo);outline-offset:2px}
+  input[type=text]{
+    width:100%;padding:15px 16px;font-size:16px;font-family:inherit;
+    border:2px solid var(--negro);border-radius:12px;background:#fff;margin-bottom:12px;
+  }
+  input[type=text]:focus{outline:3px solid var(--amarillo);outline-offset:1px}
+  label{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:6px}
+  .aviso{font-size:12px;color:var(--gris-texto);margin:4px 0 18px}
+  .error{color:var(--rojo);font-size:13px;font-weight:600;margin-bottom:10px;display:none}
+
+  /* Test */
+  .progreso-info{display:flex;justify-content:space-between;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris-texto);margin-bottom:8px}
+  .barra{width:100%;height:10px;background:#DDD9D0;border:2px solid var(--negro);border-radius:99px;overflow:hidden;margin-bottom:30px}
+  .barra div{height:100%;width:0%;background:var(--amarillo);transition:width .25s ease}
+  .pregunta{
+    font-family:'Archivo Black',sans-serif;
+    font-size:clamp(21px,5.6vw,27px);
+    line-height:1.25;margin-bottom:26px;min-height:3.2em;
+    animation:entrar .25s ease both;
+  }
+  .opciones{display:flex;flex-direction:column;gap:12px}
+  .opcion{
+    text-align:left;background:#fff;color:var(--negro);
+    border:2px solid var(--negro);border-radius:12px;
+    padding:15px 18px;font-size:16px;font-weight:600;
+    cursor:pointer;font-family:inherit;
+    box-shadow:3px 3px 0 var(--negro);
+    transition:transform .08s ease, background .12s ease, box-shadow .08s ease;
+    animation:entrar .25s ease both;
+  }
+  .opcion:nth-child(2){animation-delay:.05s}
+  .opcion:nth-child(3){animation-delay:.1s}
+  .opcion:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--negro);background:var(--amarillo)}
+  .opcion:focus-visible{outline:3px solid var(--amarillo);outline-offset:2px}
+
+  /* Resultado: billete */
+  .billete{
+    background:#fff;border-radius:16px;overflow:hidden;
+    border:2px solid var(--negro);
+    box-shadow:6px 6px 0 var(--negro);
+    margin:10px 0 24px;
+  }
+  .billete-cab{
+    background:var(--rojo);color:#fff;padding:14px 18px;
+    display:flex;justify-content:space-between;align-items:center;
+    font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;
+    border-bottom:2px solid var(--negro);
+  }
+  .billete-cuerpo{padding:26px 18px;text-align:center}
+  .billete-cuerpo .nombre{font-weight:600;font-size:15px;color:var(--gris-texto);text-transform:uppercase;letter-spacing:.08em}
+  .porcentaje{
+    font-family:'Archivo Black',sans-serif;
+    font-size:clamp(64px,20vw,96px);
+    line-height:1;margin:10px 0 4px;
+  }
+  .porcentaje span{color:var(--rojo)}
+  .veredicto{font-weight:700;font-size:17px;margin-top:8px}
+  .billete-pie{
+    border-top:2px dashed var(--negro);padding:12px 18px;
+    font-size:11px;color:var(--gris-texto);
+    display:flex;justify-content:space-between;
+    text-transform:uppercase;letter-spacing:.08em;font-weight:600;
+  }
+  .acciones{display:flex;flex-direction:column;gap:12px}
+
+  /* Ranking */
+  .rank-cab{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+  .vivo{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--rojo);
+  }
+  .vivo::before{
+    content:"";width:8px;height:8px;border-radius:50%;background:var(--rojo);
+    animation:latido 1.4s ease infinite;
+  }
+  @keyframes latido{0%,100%{opacity:1}50%{opacity:.25}}
+  .ranking-lista{list-style:none;margin:18px 0 24px}
+  .ranking-lista li{
+    background:#fff;border:2px solid var(--negro);border-radius:12px;
+    padding:13px 16px;margin-bottom:10px;
+    display:flex;align-items:center;gap:14px;font-weight:600;font-size:16px;
+    box-shadow:3px 3px 0 var(--negro);
+  }
+  .ranking-lista li .pos{font-family:'Archivo Black';width:32px;text-align:center;flex-shrink:0}
+  .ranking-lista li.oro{background:var(--amarillo)}
+  .ranking-lista li.plata{background:#E8E6E1}
+  .ranking-lista li.bronce{background:#F0D5B8}
+  .ranking-lista li.yo{outline:3px solid var(--rojo);outline-offset:2px}
+  .ranking-lista li .pct{margin-left:auto;font-family:'Archivo Black';font-size:18px;color:var(--rojo)}
+  .ranking-lista li.oro .pct{color:var(--negro)}
+  .estado{color:var(--gris-texto);font-size:14px;margin-top:16px}
+  .spacer{flex:1}
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="franja"></div>
+<div class="app">
+
+  <div class="marca">
+    <div class="rombo">S</div>
+    <small>Linea C-5 &middot; Test oficial no oficial</small>
+  </div>
+
+  <!-- PANTALLA INICIO -->
+  <section class="pantalla activa" id="p-inicio">
+    <h1>Test de<br>Madrid <span class="sur">Sur</span></h1>
+    <p class="sub">Averigua que porcentaje de Madrid Sur llevas dentro. Responde con sinceridad: el tupperware no miente.</p>
+    <div class="sellos">
+      <span class="sello">50 preguntas</span>
+      <span class="sello">2 min</span>
+      <span class="sello">Ranking en directo</span>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="btn-comenzar">Comenzar test de Madrid Sur</button>
+    <div style="height:12px"></div>
+    <button class="btn fantasma" id="btn-ver-ranking-inicio">Ver ranking</button>
+  </section>
+
+  <!-- PANTALLA NOMBRE -->
+  <section class="pantalla" id="p-nombre">
+    <h1 style="font-size:clamp(24px,6vw,32px)">&iquest;Quien eres?</h1>
+    <p class="sub" style="margin-bottom:22px">Sin registros ni historias. Solo para el ranking.</p>
+    <label for="inp-nombre">Nombre</label>
+    <input type="text" id="inp-nombre" placeholder="Jonathan" maxlength="30" autocomplete="off">
+    <label for="inp-apellidos">Apellidos</label>
+    <input type="text" id="inp-apellidos" placeholder="Garcia" maxlength="40" autocomplete="off">
+    <p class="aviso">En el ranking publico solo se mostrara tu nombre y la inicial del apellido (ej. "Jonathan G.").</p>
+    <p class="error" id="err-nombre">Pon al menos tu nombre y un apellido, que no es tanto pedir.</p>
+    <div class="spacer"></div>
+    <button class="btn" id="btn-empezar-preguntas">Empezar</button>
+  </section>
+
+  <!-- PANTALLA TEST -->
+  <section class="pantalla" id="p-test">
+    <div class="progreso-info">
+      <span id="prog-texto">Pregunta 1</span>
+      <span id="prog-total"></span>
+    </div>
+    <div class="barra"><div id="prog-barra"></div></div>
+    <div class="pregunta" id="q-texto"></div>
+    <div class="opciones" id="q-opciones"></div>
+  </section>
+
+  <!-- PANTALLA RESULTADO -->
+  <section class="pantalla" id="p-resultado">
+    <div class="billete">
+      <div class="billete-cab">
+        <span>Cercanias del alma</span>
+        <span>C-5</span>
+      </div>
+      <div class="billete-cuerpo">
+        <div class="nombre" id="res-nombre"></div>
+        <div class="porcentaje"><span id="res-pct">0</span>%</div>
+        <div style="font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;color:var(--gris-texto)">de Madrid Sur</div>
+        <div class="veredicto" id="res-veredicto"></div>
+      </div>
+      <div class="billete-pie">
+        <span id="res-fecha"></span>
+        <span>Billete no reembolsable</span>
+      </div>
+    </div>
+    <p class="estado" id="res-estado" style="margin:0 0 16px"></p>
+    <div class="acciones">
+      <button class="btn" id="btn-ranking">Ver ranking</button>
+      <button class="btn fantasma" id="btn-repetir">Repetir test</button>
+    </div>
+  </section>
+
+  <!-- PANTALLA RANKING -->
+  <section class="pantalla" id="p-ranking">
+    <div class="rank-cab">
+      <h1 style="font-size:clamp(24px,6vw,32px)">Ranking<br>Madrid Sur</h1>
+      <span class="vivo" id="rank-vivo" style="display:none">En directo</span>
+    </div>
+    <p class="estado" id="rank-estado">Cargando ranking...</p>
+    <ol class="ranking-lista" id="rank-lista"></ol>
+    <div class="spacer"></div>
+    <button class="btn secundario" id="btn-volver-inicio">Volver al inicio</button>
+  </section>
+
+</div>
+
+<script>
+/* ============================================================
+   CONFIGURACION DEL RANKING (Firebase)
+   ------------------------------------------------------------
+   1. Entra en https://console.firebase.google.com y crea un
+      proyecto gratis (ej. "test-madrid-sur").
+   2. En el menu: Compilacion > Realtime Database > Crear base
+      de datos > empieza en "modo de prueba" (o pon estas reglas:
+      { "rules": { "ranking": { ".read": true, ".write": true } } } )
+   3. Copia la URL que te da (algo como
+      https://test-madrid-sur-default-rtdb.europe-west1.firebasedatabase.app)
+      y pegala aqui abajo entre las comillas.
+   Si la dejas vacia, la app intentara usar el almacenamiento
+   de la vista previa de Claude (solo funciona dentro de Claude).
+   ============================================================ */
+/* URL detectada automaticamente entre las dos posibles regiones
+   del proyecto madrid-sur-eab18. No hace falta tocar nada. */
+const FIREBASE_CANDIDATAS = [
+  "https://madrid-sur-eab18-default-rtdb.europe-west1.firebasedatabase.app",
+  "https://madrid-sur-eab18-default-rtdb.firebaseio.com"
+];
+let FIREBASE_URL = FIREBASE_CANDIDATAS[0];
+let firebaseListo = null;
+
+async function detectarFirebase(){
+  if (firebaseListo) return firebaseListo;
+  firebaseListo = (async () => {
+    for (const url of FIREBASE_CANDIDATAS){
+      try {
+        const r = await fetch(url + "/ranking.json", { method: "GET" });
+        if (r.ok){ FIREBASE_URL = url; return url; }
+      } catch(e){ /* probar la siguiente */ }
+    }
+    return FIREBASE_URL; // se queda con la primera por defecto
+  })();
+  return firebaseListo;
+}
+
+/* Cada cuantos segundos se refresca el ranking en directo */
+const REFRESCO_SEG = 5;
+
+/* ============================================================
+   PREGUNTAS
+   Para anadir una pregunta si/no: SN("texto") -> Si puntua.
+   Con opciones propias: { t:"texto", o:["op1","op2"], ms:0 }
+   donde ms es el indice de la respuesta de Madrid Sur.
+   ============================================================ */
+function SN(texto, msIndex){
+  return { t: texto, o: ["Si", "No"], ms: (msIndex === undefined ? 0 : msIndex) };
+}
+
+const PREGUNTAS = [
+  { t:"Cuando estas currando, \u00bfdonde o que comes?", o:["Me llevo tupperware","Como fuera","No como"], ms:0 },
+  { t:"\u00bfTardas mas de 1 hora en llegar al curro?", o:["Si","No, voy en coche"], ms:0 },
+  { t:"\u00bfVives con tu/s abuelo/s en casa?", o:["Si","No"], ms:0 },
+  { t:"\u00bfLlevas calcetines con traje?", o:["Si, pinkies","Si, calcetines oscuros","No, tobillo al aire"], ms:0 },
+  SN("\u00bfVas a piscinas municipales en verano?"),
+  SN("\u00bfLlevas (o has llevado) la mochila del Basic Fit?"),
+  SN("\u00bfHas ido alguna vez al aquapark de Madrid?"),
+  { t:"\u00bfHas cogido un avion alguna vez?", o:["Nunca","Si"], ms:0 },
+  SN("\u00bfHas pillado alguna vez un buho para volver a casa?"),
+  SN("\u00bfIrias sin chaqueta de traje a una boda?"),
+  SN("\u00bfVeraneas en agosto... en Madrid?"),
+  SN("\u00bfUsas los buses lanzadera del curro para ir a los actos?"),
+  { t:"De pequeno, \u00bfcuando tenias los regalos de Reyes?", o:["El 25 de diciembre","El 6 de enero, como manda la tradicion"], ms:0 },
+  SN("\u00bfUsas ofertas de El Tenedor para salir a cenar?"),
+  SN("\u00bfVas al VIPS?"),
+  SN("\u00bfAplaudes al acabar la pelicula en el cine?"),
+  SN("\u00bfHas comido platos prehechos del Mercadona... en el propio Mercadona?"),
+  SN("\u00bfTe haces fotos en la playa o el paseo maritimo para demostrar que estas?"),
+  SN("\u00bfReciclas?"),
+  SN("\u00bfLlevas camisas de El Ganso?"),
+  SN("\u00bfTienes taza propia en el curro?"),
+  SN("\u00bfSales de fiesta por Moncloa?"),
+  SN("\u00bfVas al 100 Montaditos?"),
+  SN("\u00bfTe pagaste (o te estas pagando) tu la universidad?"),
+  SN("\u00bfSubes estados de WhatsApp?"),
+  SN("\u00bfLlevas sombrilla a la playa?"),
+  SN("\u00bfDices \"que aproveche\" cuando alguien esta comiendo?"),
+  SN("\u00bfDices \"salud\" cuando alguien estornuda?"),
+  SN("\u00bfLlamas a tu novia \"mi pareja\"?"),
+  SN("\u00bfTe pones condon para follar con tu novia?"),
+  SN("\u00bfTienes gato?"),
+  SN("\u00bfTe cortas el pelo en casa?"),
+  SN("\u00bfVas a ver las luces de Navidad de Madrid?"),
+  SN("\u00bfUsas la lavanderia compartida de tu calle?"),
+  SN("\u00bfFumas cachimba?"),
+  SN("\u00bfTe cortas el pelo en la Marco Aldany?"),
+  SN("\u00bfTienes una botella de Coca-Cola reutilizada llena de agua en la nevera?"),
+  SN("\u00bfVas en chanclas por la calle?"),
+  SN("\u00bfTe pones crema?"),
+  SN("\u00bfLlamas a tus hijos \"mis crios\"?"),
+  SN("\u00bfLlamas \"cielo\" o \"amor\" a tu novia?"),
+  SN("\u00bfLlevas tatuada una linea en el brazo?"),
+  SN("\u00bfCompartes piso con gente desconocida?"),
+  SN("\u00bfVapeas?"),
+  SN("\u00bfUsas BlaBlaCar?"),
+  SN("\u00bfTrabajas o has trabajado en Glovo?"),
+  SN("\u00bfTu moto es una Honda PCX?"),
+  SN("\u00bfTe has subido a las barquitas del Retiro?"),
+  SN("\u00bfCelebras San Valentin?"),
+  SN("\u00bfCompras ropa en el Primark?")
+  /* Anade mas preguntas aqui */
+];
+
+function veredicto(p){
+  if (p >= 90) return "Leyenda de la C-5. Naciste con un tupperware bajo el brazo.";
+  if (p >= 75) return "Orgullo de Madrid Sur. Se te nota hasta andando.";
+  if (p >= 50) return "Se te escucha el Cercanias de fondo.";
+  if (p >= 25) return "Zona neutral. Sospechoso.";
+  return "Eres de Chamberi, admitelo.";
+}
+
+/* ============================================================
+   CAPA DE ALMACENAMIENTO
+   Usa Firebase si hay URL configurada; si no, el storage de
+   la vista previa de Claude como respaldo.
+   ============================================================ */
+const usaFirebase = true;
+
+async function guardarResultado(clave, datos){
+  if (usaFirebase){
+    await detectarFirebase();
+    const r = await fetch(FIREBASE_URL + "/ranking/" + encodeURIComponent(clave) + ".json", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos)
+    });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+  } else {
+    if (!window.storage) throw new Error("sin storage");
+    await window.storage.set("mdsur:" + clave, JSON.stringify(datos), true);
+  }
+}
+
+async function leerRanking(){
+  if (usaFirebase){
+    await detectarFirebase();
+    const r = await fetch(FIREBASE_URL + "/ranking.json");
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const obj = await r.json();
+    return obj ? Object.values(obj) : [];
+  } else {
+    if (!window.storage) throw new Error("sin storage");
+    const res = await window.storage.list("mdsur:", true);
+    const claves = (res && res.keys) ? res.keys : [];
+    const entradas = await Promise.all(claves.map(async k => {
+      try {
+        const g = await window.storage.get(k, true);
+        return g ? JSON.parse(g.value) : null;
+      } catch(e){ return null; }
+    }));
+    return entradas.filter(Boolean);
+  }
+}
+
+/* ============================================================
+   ESTADO Y NAVEGACION
+   ============================================================ */
+const $ = id => document.getElementById(id);
+let usuario = { display:"", clave:"" };
+let idx = 0, puntos = 0;
+let procesando = false;
+let timerRanking = null;
+
+function mostrar(id){
+  document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+  const el = $(id);
+  el.classList.remove('activa'); void el.offsetWidth; // reinicia animacion
+  el.classList.add('activa');
+  window.scrollTo(0,0);
+  if (id !== 'p-ranking' && timerRanking){
+    clearInterval(timerRanking); timerRanking = null;
+  }
+}
+
+$('btn-comenzar').addEventListener('click', () => mostrar('p-nombre'));
+
+$('btn-ver-ranking-inicio').addEventListener('click', abrirRanking);
+$('btn-ranking').addEventListener('click', abrirRanking);
+
+function abrirRanking(){
+  mostrar('p-ranking');
+  cargarRanking(true);
+  if (timerRanking) clearInterval(timerRanking);
+  timerRanking = setInterval(() => cargarRanking(false), REFRESCO_SEG * 1000);
+}
+
+$('btn-empezar-preguntas').addEventListener('click', () => {
+  const n = $('inp-nombre').value.trim();
+  const a = $('inp-apellidos').value.trim();
+  if (!n || !a){
+    $('err-nombre').style.display = 'block';
+    return;
+  }
+  $('err-nombre').style.display = 'none';
+  const nombreCap = n.charAt(0).toUpperCase() + n.slice(1);
+  usuario.display = nombreCap + " " + a.charAt(0).toUpperCase() + ".";
+  usuario.clave = (nombreCap + "_" + a.charAt(0).toUpperCase())
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-z0-9_]/g,"");
+  idx = 0; puntos = 0;
+  mostrar('p-test');
+  pintarPregunta();
+});
+
+function pintarPregunta(){
+  const q = PREGUNTAS[idx];
+  $('prog-texto').textContent = "Pregunta " + (idx+1);
+  $('prog-total').textContent = (idx+1) + " / " + PREGUNTAS.length;
+  $('prog-barra').style.width = (idx / PREGUNTAS.length * 100) + "%";
+  const qt = $('q-texto');
+  qt.textContent = q.t;
+  qt.classList.remove('pregunta'); void qt.offsetWidth; qt.classList.add('pregunta');
+  const cont = $('q-opciones');
+  cont.innerHTML = "";
+  q.o.forEach((txt, i) => {
+    const b = document.createElement('button');
+    b.className = 'opcion';
+    b.textContent = txt;
+    b.addEventListener('click', () => responder(i));
+    cont.appendChild(b);
+  });
+}
+
+function responder(i){
+  if (procesando) return;
+  procesando = true;
+  setTimeout(() => { procesando = false; }, 250);
+  if (i === PREGUNTAS[idx].ms) puntos++;
+  idx++;
+  if (idx < PREGUNTAS.length) pintarPregunta();
+  else terminar();
+}
+
+function animarNumero(el, hasta){
+  const dur = 900, t0 = performance.now();
+  function paso(t){
+    const p = Math.min((t - t0) / dur, 1);
+    el.textContent = Math.round(hasta * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(paso);
+  }
+  requestAnimationFrame(paso);
+}
+
+async function terminar(){
+  const pct = Math.round(puntos / PREGUNTAS.length * 100);
+  $('res-nombre').textContent = usuario.display;
+  $('res-veredicto').textContent = veredicto(pct);
+  $('res-fecha').textContent = new Date().toLocaleDateString('es-ES');
+  mostrar('p-resultado');
+  animarNumero($('res-pct'), pct);
+
+  $('res-estado').textContent = "Guardando tu resultado en el ranking...";
+  try {
+    await guardarResultado(usuario.clave, { d: usuario.display, p: pct, t: Date.now() });
+    $('res-estado').textContent = "Eres un " + pct + "% de Madrid Sur. Resultado guardado en el ranking.";
+  } catch (e){
+    $('res-estado').textContent = usaFirebase
+      ? "No se pudo guardar en el ranking. Revisa la conexion y repite el test."
+      : "No se pudo guardar. Comprueba tu conexion o las reglas de Firebase.";
+  }
+}
+
+$('btn-repetir').addEventListener('click', () => {
+  idx = 0; puntos = 0;
+  mostrar('p-test');
+  pintarPregunta();
+});
+
+$('btn-volver-inicio').addEventListener('click', () => mostrar('p-inicio'));
+
+async function cargarRanking(primeraVez){
+  const lista = $('rank-lista');
+  const estado = $('rank-estado');
+  if (primeraVez) estado.textContent = "Cargando ranking...";
+  try {
+    const entradas = await leerRanking();
+    const validas = entradas
+      .filter(e => e && typeof e.p === "number" && e.d)
+      .sort((a,b) => b.p - a.p || a.t - b.t);
+    $('rank-vivo').style.display = "inline-flex";
+    if (validas.length === 0){
+      lista.innerHTML = "";
+      estado.textContent = "Todavia no hay nadie en el ranking. Se el primero.";
+      return;
+    }
+    estado.textContent = validas.length + (validas.length === 1 ? " persona ha hecho el test." : " personas han hecho el test.");
+    lista.innerHTML = "";
+    validas.forEach((e, i) => {
+      const li = document.createElement('li');
+      if (i === 0) li.classList.add('oro');
+      else if (i === 1) li.classList.add('plata');
+      else if (i === 2) li.classList.add('bronce');
+      if (usuario.display && e.d === usuario.display) li.classList.add('yo');
+      const pos = document.createElement('span');
+      pos.className = 'pos';
+      pos.textContent = (i+1);
+      const nom = document.createElement('span');
+      nom.textContent = e.d;
+      const pct = document.createElement('span');
+      pct.className = 'pct';
+      pct.textContent = e.p + "%";
+      li.appendChild(pos); li.appendChild(nom); li.appendChild(pct);
+      lista.appendChild(li);
+    });
+  } catch(e){
+    $('rank-vivo').style.display = "none";
+    estado.textContent = usaFirebase
+      ? "No se pudo cargar el ranking. Reintentando..."
+      : "No se pudo cargar el ranking. Comprueba las reglas de Firebase (.read y .write en true).";
+  }
+}
+</script>
+</body>
+</html>
